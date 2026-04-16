@@ -4,13 +4,25 @@ set -euo pipefail
 
 # Variables
 KREL="$(uname -r)"
-EVDI_VER="${EVDI_VER:-1.14.10}"
+EVDI_VER="${EVDI_VER:-1.14.13}"
+EVDI_SRC="/home/alesaari/evdi-src"
 MOK_DER="/var/lib/dkms/MOK.der"
 MOK_PRIV="/var/lib/dkms/MOK.priv"
-BDIR="/var/lib/dkms/evdi/$EVDI_VER/$KREL/x86_64/module"
+BDIR="$HOME/evdi-src/module"
 DEST="/lib/modules/$KREL/extra/evdi.ko"
 
-echo "*** Kernel: $KREL | EVDI: $EVDI_VER ***"
+echo "*** Updating evdi source code ***"
+
+cd $EVDI_SRC
+# Pull fresh source code for evdi module, stdout is supressed
+git pull >/dev/null
+cd module
+# Make the module with fresh source code, stdout is supressed
+make >/dev/null
+cd
+
+echo -e "Evdi source code updated\n"
+echo "*** Reinstalling EVDI module. Kernel: $KREL ***"
 
 # Sanity check, keys present
 [[ -f "$MOK_DER" && -f "$MOK_PRIV" ]] || { echo "Missing MOK.der or MOK.priv, aborting..."; exit 1; }
